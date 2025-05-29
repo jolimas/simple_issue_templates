@@ -1,0 +1,24 @@
+# Ignore system and hidden files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Ignore bundled gems and build artifacts
+/.bundle/
+/vendor/bundle
+/log/*.log
+
+# Ignore test files
+/coverage/
+/spec/tmp
+/test/tmp
+/test/reports/
+
+# Ignore local configuration files
+/config/configuration.yml
+/config/database.yml
+/config/secrets.yml
+
+# Ignore temporary files
+/tmp/

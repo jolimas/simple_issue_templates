@@ -1,0 +1,105 @@
+<% html_title(l(:label_issue_templates)) %>
+
+<%= content_for :header_tags do %>
+  <meta name="csrf-token" content="<%= form_authenticity_token %>">
+<% end %>
+
+<div class="contextual">
+  <%= link_to l(:label_template_new), new_issue_template_path(template_type: 'creation'),
+              :class => 'icon icon-add' %>
+  <%= link_to l(:label_status_template_new), new_issue_template_path(template_type: 'status_change'),
+              :class => 'icon icon-add' %>
+</div>
+
+<h2><%= l(:label_issue_templates) %></h2>
+
+<% if @templates.any? %>
+  <% @templates_by_type.each do |template_type, templates| %>
+    <h3><%= l("label_#{template_type}_templates") %></h3>
+
+    <table class="list sortable-table">
+      <thead>
+        <tr>
+          <th><%= l(:field_position) %></th>
+          <th><%= l(:field_name) %></th>
+          <th><%= l(:field_description) %></th>
+          <th><%= l(:field_project) %></th>
+          <th><%= l(:field_tracker) %></th>
+          <% if template_type == 'status_change' %>
+            <th><%= l(:field_status) %></th>
+          <% end %>
+          <th><%= l(:field_enabled) %></th>
+          <th><%= l(:label_reorder) %></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody class="sortable-tbody" data-template-type="<%= template_type %>">
+        <% templates.each do |template| %>
+          <tr class="<%= cycle("odd", "even") %> sortable-row" data-template-id="<%= template.id %>">
+            <td class="position-cell"><%= template.position %></td>
+            <td><%= link_to template.name, issue_template_path(template) %></td>
+            <td><%= truncate(template.description, length: 100) %></td>
+            <td>
+              <% if template.is_global %>
+                <em><%= l(:label_global) %></em>
+              <% else %>
+                <%= template.project&.name || l(:label_all_projects) %>
+              <% end %>
+            </td>
+            <td><%= template.tracker&.name || l(:label_all_trackers) %></td>
+            <% if template_type == 'status_change' %>
+              <td><%= template.issue_status&.name || l(:label_all_statuses) %></td>
+            <% end %>
+            <td>
+              <%= checked_image(template.enabled?) %>
+            </td>
+            <td class="reorder-buttons">
+              <%= link_to '↑', reorder_issue_template_path(template, direction: 'up'),
+                          method: :patch,
+                          remote: true,
+                          class: 'icon icon-move-up',
+                          title: l(:button_move_up) %>
+              <%= link_to '↓', reorder_issue_template_path(template, direction: 'down'),
+                          method: :patch,
+                          remote: true,
+                          class: 'icon icon-move-down',
+                          title: l(:button_move_down) %>
+            </td>
+            <td class="buttons">
+              <%= link_to l(:button_edit), edit_issue_template_path(template),
+                          :class => 'icon icon-edit' %>
+              <%= link_to l(:button_delete), issue_template_path(template),
+                          :method => :delete,
+                          :confirm => l(:text_are_you_sure),
+                          :class => 'icon icon-del' %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+<% else %>
+  <p class="nodata"><%= l(:label_no_data) %></p>
+<% end %>
+
+<%= content_for :header_tags do %>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      // Setup CSRF token for jQuery AJAX requests
+      $.ajaxSetup({
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'));
+        }
+      });
+
+      // Handle reorder link clicks
+      $('.reorder-buttons a').on('ajax:error', function(event, xhr, status, error) {
+        console.error('Reorder failed:', xhr.status, xhr.responseText);
+      });
+
+      $('.reorder-buttons a').on('ajax:success', function(event, data, status, xhr) {
+        // Success handled by reorder.js.erb
+      });
+    });
+  </script>
+<% end %>

@@ -1,0 +1,161 @@
+/* Issue Templates Styling */
+
+/* Basic form layout */
+div.issue-template-form {
+  margin-bottom: 20px;
+}
+
+/* Standard form spacing */
+.issue-template-form p {
+  padding: 6px 0;
+  margin-bottom: 4px;
+  overflow: hidden;
+  clear: both;
+}
+
+/* Standard field widths */
+.issue-template-form input[type="text"] {
+  width: 300px;
+  max-width: 70%;
+}
+
+.issue-template-form textarea {
+  width: 70%;
+  max-width: 99%;
+}
+
+/* Reset Content text area styling and align with other form fields */
+.issue-template-form textarea.wiki-edit {
+  width: 70%;
+  max-width: 99%;
+  margin-left: 10px;
+  margin-bottom: 5px;
+  box-sizing: border-box;
+  float: left;
+}
+
+/* Fix Wiki toolbar alignment */
+.issue-template-form .jstBlock {
+  margin-left: 10px;
+  float: left;
+  position: relative;
+  left: 0;
+  width: 70%;
+}
+
+/* Container for the wiki editor to maintain alignment */
+.wiki-edit-container {
+  position: relative;
+  display: block;
+  width: 100%;
+  clear: both;
+}
+
+.wiki-edit-container p {
+  margin-bottom: 0 !important;
+  padding: 6px 0;
+  overflow: hidden;
+  position: relative;
+  display: block;
+}
+
+.issue-template-form select {
+  min-width: 300px;
+  max-width: 70%;
+}
+
+/* Form field positioning */
+.issue-template-form p > select,
+.issue-template-form p > input[type="text"],
+.issue-template-form p > textarea {
+  margin-left: 10px;
+  float: left;
+  position: relative;
+  left: 0;
+}
+
+/* Position field should be smaller */
+.issue-template-form input[name="issue_template[position]"] {
+  width: 50px !important;
+}
+
+/* Fix checkbox alignment */
+.issue-template-form input[type="checkbox"] {
+  vertical-align: middle;
+  margin-top: 6px;
+  margin-left: 5px;
+  float: none;
+}
+
+/* Info text styling */
+.issue-template-form em.info {
+  display: inline-block;
+  margin-left: 5px;
+  color: #666;
+  font-style: italic;
+  font-size: 0.9em;
+  vertical-align: middle;
+}
+
+/* Better label alignment overall */
+.issue-template-form label {
+  text-align: right;
+  padding-top: 5px;
+  width: 25%;
+  min-width: 150px;
+  float: left;
+  padding-right: 10px;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+/* Remove any custom label styling that might interfere with alignment */
+
+/* Template content info styling */
+.issue-template-form .help-text {
+  padding-top: 0;
+  margin-bottom: 10px;
+  margin-left: 10%;
+  padding-left: 10px;
+  clear: both;
+}
+
+.issue-template-form .help-text em.template-info {
+  display: block;
+  clear: both;
+}
+
+/* Fix alignment for wiki toolbar container */
+div.jstElements {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Force-align all editor components */
+.jstBlock .jstElements,
+.jstBlock .jstEditor {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.jstBlock .jstEditor textarea {
+  box-sizing: border-box;
+  width: 100% !important;
+  margin-left: 0 !important;
+}
+
+/* Make sure project and status field containers look good */
+#project_field p,
+#status_field p {
+  margin: 6px 0;
+  clear: both;
+}
+
+/* Specific fix for Template Type field to prevent truncation */
+label[for="issue_template_template_type"] {
+  width: 25%;
+  min-width: 150px;
+  white-space: nowrap;
+}

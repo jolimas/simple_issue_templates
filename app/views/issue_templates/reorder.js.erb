@@ -1,0 +1,8 @@
+// Template reordered successfully, reload the page to show the new order
+try {
+  window.location.reload();
+} catch (e) {
+  console.error('Failed to reload page after reorder:', e);
+  // Fallback: redirect to templates index
+  window.location.href = '<%= issue_templates_path %>';
+}

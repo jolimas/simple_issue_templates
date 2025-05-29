@@ -1,0 +1,41 @@
+en:
+  label_issue_templates: "Issue Templates"
+  label_template_new: "New Template"
+  label_status_template_new: "New Status Change Template"
+  label_template_edit: "Edit Template"
+  label_creation_templates: "Creation Templates"
+  label_status_change_templates: "Status Change Templates"
+  label_creation_template: "Creation Template"
+  label_status_change_template: "Status Change Template"
+  label_global_template: "Global template"
+  label_global: "Global"
+  label_all_projects: "All projects"
+  label_all_trackers: "All trackers"
+  label_all_statuses: "All statuses"
+  label_enable_creation_templates: "Enable creation templates"
+  label_enable_status_templates: "Enable status change templates"
+  label_reorder: "Reorder"
+  label_preview: "Preview"
+
+  field_template_type: "Template Type"
+  field_content: "Content"
+  field_enabled: "Enabled"
+  field_position: "Position"
+  field_scope: "Scope"
+  field_type: "Type"
+
+  text_global_template_info: "Global templates are available in all projects"
+  text_template_content_info: "Template content that will be inserted into the issue description or notes. You can use Redmine's text formatting syntax."
+  text_simple_issue_templates_settings_info: "Configure which template types are enabled for your Redmine instance"
+
+  button_apply_template: "Apply Template"
+  button_clear: "Clear"
+  button_move_up: "Move up"
+  button_move_down: "Move down"
+
+  notice_template_applied: "Template applied successfully"
+
+  # JavaScript messages
+  js:
+    label_select_template: "Select a template..."
+    label_apply_template: "Apply Template"

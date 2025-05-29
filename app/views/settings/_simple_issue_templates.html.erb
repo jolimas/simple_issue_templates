@@ -1,0 +1,15 @@
+<p>
+  <%= content_tag :label, l(:label_enable_creation_templates) %>
+  <%= check_box_tag 'settings[enable_creation_templates]', 1,
+                    @settings['enable_creation_templates'].to_i == 1 %>
+</p>
+
+<p>
+  <%= content_tag :label, l(:label_enable_status_templates) %>
+  <%= check_box_tag 'settings[enable_status_templates]', 1,
+                    @settings['enable_status_templates'].to_i == 1 %>
+</p>
+
+<em class="info">
+  <%= l(:text_simple_issue_templates_settings_info) %>
+</em>

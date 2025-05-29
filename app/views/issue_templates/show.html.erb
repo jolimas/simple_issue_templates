@@ -1,0 +1,47 @@
+<% html_title(@template.name) %>
+
+<div class="contextual">
+  <%= link_to l(:button_edit), edit_issue_template_path(@template), :class => 'icon icon-edit' %>
+  <%= link_to l(:button_delete), issue_template_path(@template),
+              :method => :delete,
+              :confirm => l(:text_are_you_sure),
+              :class => 'icon icon-del' %>
+</div>
+
+<h2><%= @template.name %></h2>
+
+<div class="box">
+  <% if @template.description.present? %>
+    <p><strong><%= l(:field_description) %>:</strong></p>
+    <p><%= simple_format(@template.description) %></p>
+  <% end %>
+
+  <p><strong><%= l(:field_type) %>:</strong> <%= l("label_#{@template.template_type}_template") %></p>
+
+  <% if @template.is_global %>
+    <p><strong><%= l(:field_scope) %>:</strong> <%= l(:label_global) %></p>
+  <% elsif @template.project %>
+    <p><strong><%= l(:field_project) %>:</strong> <%= @template.project.name %></p>
+  <% end %>
+
+  <% if @template.tracker %>
+    <p><strong><%= l(:field_tracker) %>:</strong> <%= @template.tracker.name %></p>
+  <% end %>
+
+  <% if @template.issue_status && @template.status_change_template? %>
+    <p><strong><%= l(:field_status) %>:</strong> <%= @template.issue_status.name %></p>
+  <% end %>
+
+  <p><strong><%= l(:field_enabled) %>:</strong> <%= checked_image(@template.enabled?) %></p>
+
+  <% if @template.position %>
+    <p><strong><%= l(:field_position) %>:</strong> <%= @template.position %></p>
+  <% end %>
+</div>
+
+<div class="box">
+  <h3><%= l(:field_content) %></h3>
+  <pre><%= @template.content %></pre>
+</div>
+
+<%= link_to l(:button_back), issue_templates_path %>

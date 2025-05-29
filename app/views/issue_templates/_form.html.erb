@@ -1,0 +1,104 @@
+<%= labelled_form_for @template do |f| %>
+  <div class="issue-template-form box tabular">
+    <p><%= f.text_field :name, :required => true, :size => 60, :label => l(:field_name) %></p>
+    <p><%= f.text_area :description, :rows => 3, :cols => 60, :label => l(:field_description) %></p>
+
+    <p>
+      <%= f.select :template_type,
+                   options_for_select([
+                     [l(:label_creation_template), 'creation'],
+                     [l(:label_status_change_template), 'status_change']
+                   ], @template.template_type),
+                   {:required => true, :label => l(:field_template_type)},
+                   {:required => true, :onchange => "toggleStatusField(this.value)"} %>
+    </p>
+
+    <p>
+      <label for="issue_template_is_global"><%= l(:label_global_template) %></label>
+      <%= f.check_box :is_global, :no_label => true %>
+      <em class="info"><%= l(:text_global_template_info) %></em>
+    </p>
+
+    <div id="project_field" style="<%= 'display: none;' if @template.is_global %>">
+      <p>
+        <%= f.select :project_id,
+                     options_from_collection_for_select(Project.active.order(:name), :id, :name, @template.project_id),
+                     {:include_blank => l(:label_all_projects), :label => l(:field_project)},
+                     {:onchange => "updateProjectSelection()"} %>
+      </p>
+    </div>
+
+    <p>
+      <%= f.select :tracker_id,
+                   options_from_collection_for_select(Tracker.all.order(:position), :id, :name, @template.tracker_id),
+                   {:include_blank => l(:label_all_trackers), :label => l(:field_tracker)} %>
+    </p>
+
+    <div id="status_field" style="<%= 'display: none;' unless @template.status_change_template? %>">
+      <p>
+        <%= f.select :issue_status_id,
+                     options_from_collection_for_select(IssueStatus.all.order(:position), :id, :name, @template.issue_status_id),
+                     {:include_blank => l(:label_all_statuses), :label => l(:field_status)} %>
+      </p>
+    </div>
+
+    <p>
+      <%= f.text_field :position, :size => 6, :label => l(:field_position) %>
+    </p>
+
+    <p>
+      <label for="issue_template_enabled"><%= l(:field_enabled) %></label>
+      <%= f.check_box :enabled, :no_label => true %>
+    </p>
+
+    <div class="wiki-edit-container">
+      <p>
+        <%= f.text_area :content,
+                        :rows => 15, :cols => 80, :required => true,
+                        :class => 'wiki-edit',
+                        :data => { :'auto-complete' => true },
+                        :label => l(:field_content) %>
+      </p>
+
+      <%= wikitoolbar_for 'issue_template_content' %>
+    </div>
+
+    <div class="help-text">
+      <em class="info template-info"><%= l(:text_template_content_info) %></em>
+    </div>
+  </div>
+
+  <%= submit_tag l(:button_save) %>
+<% end %>
+
+<script type="text/javascript">
+function toggleStatusField(templateType) {
+  var statusField = document.getElementById('status_field');
+  if (templateType === 'status_change') {
+    statusField.style.display = 'block';
+  } else {
+    statusField.style.display = 'none';
+  }
+}
+
+function updateProjectSelection() {
+  var globalCheckbox = document.getElementById('issue_template_is_global');
+  var projectField = document.getElementById('project_field');
+
+  if (globalCheckbox && globalCheckbox.checked) {
+    projectField.style.display = 'none';
+  } else {
+    projectField.style.display = 'block';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize global checkbox listener
+  var globalCheckbox = document.getElementById('issue_template_is_global');
+  if (globalCheckbox) {
+    globalCheckbox.addEventListener('change', function() {
+      updateProjectSelection();
+    });
+  }
+});
+</script>
