@@ -1,8 +1,9 @@
 module SimpleIssueTemplates
   class ViewHooks < Redmine::Hook::ViewListener
-    # Include CSS in the header
+    # Include CSS and JavaScript in the header
     def view_layouts_base_html_head(context={})
-      stylesheet_link_tag('issue_templates', :plugin => 'simple_issue_templates')
+      stylesheet_link_tag('issue_templates', :plugin => 'simple_issue_templates') +
+      javascript_include_tag('issue_templates', :plugin => 'simple_issue_templates')
     end
 
     # Add template selector to new issue form
@@ -100,79 +101,12 @@ module SimpleIssueTemplates
         if templates.any?
           content = content_tag :div, id: 'status-templates-section', style: 'border: 1px solid #ddd; padding: 10px; margin: 10px 0; background: #f9f9f9;' do
             content_tag(:h4, 'Status Change Templates', style: 'margin-top: 0;') +
-            content_tag(:p, style: 'margin-bottom: 0;') do
-              select_tag('status_template_id',
+            content_tag(:p, style: 'margin-bottom: 0;') do               select_tag('status_template_id',
                          options_from_collection_for_select(templates, :id, :name),
-                         { include_blank: 'Select a template...',
+                         { include_blank: '-- Select a template or clear notes --',
                            onchange: 'applyStatusTemplate(this.value);',
                            style: 'width: 100%; max-width: 300px;' })
-            end +
-            content_tag(:script, raw("
-              // Auto-apply template when status changes
-              document.addEventListener('DOMContentLoaded', function() {
-                const statusSelect = document.getElementById('issue_status_id');
-                if (statusSelect) {
-                  statusSelect.addEventListener('change', function() {
-                    autoSelectTemplateForStatus(this.value);
-                  });
-                }
-              });
-
-              function autoSelectTemplateForStatus(statusId) {
-                if (!statusId) return;
-
-                fetch('/issue_templates/get_templates?template_type=status_change&status_id=' + statusId, {
-                  headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                  }
-                })
-                  .then(response => response.ok ? response.json() : [])
-                  .then(data => {
-                    const templateSelect = document.getElementById('status_template_id');
-                    if (data.length > 0 && templateSelect) {
-                      templateSelect.value = data[0].id;
-                      applyStatusTemplate(data[0].id);
-                    }
-                  })
-                  .catch(error => console.log('No specific template for this status'));
-              }
-
-              function applyStatusTemplate(templateId) {
-                if (!templateId) return;
-
-                fetch('/issue_templates/get_templates?template_type=status_change&template_id=' + templateId, {
-                  headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                  }
-                })
-                  .then(response => {
-                    if (!response.ok) {
-                      throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                  })
-                  .then(data => {
-                    if (data.length > 0) {
-                      const template = data[0];
-                      const notesField = document.getElementById('issue_notes');
-                      if (notesField) {
-                        if (notesField.value.trim()) {
-                          notesField.value += '\\n\\n' + template.content;
-                        } else {
-                          notesField.value = template.content;
-                        }
-                        // Trigger change event for any listeners
-                        const event = new Event('change', { bubbles: true });
-                        notesField.dispatchEvent(event);
-                      }
-                    }
-                  })
-                  .catch(error => {
-                    console.error('Error loading status template:', error);
-                    alert('Error loading template. Please try again.');
-                  });
-              }
-            "))
+            end
           end
 
           return content

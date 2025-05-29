@@ -49,6 +49,7 @@ div.issue-template-form {
   display: block;
   width: 100%;
   clear: both;
+  margin-bottom: 10px;
 }
 
 .wiki-edit-container p {
@@ -57,6 +58,7 @@ div.issue-template-form {
   overflow: hidden;
   position: relative;
   display: block;
+  box-sizing: border-box;
 }
 
 .issue-template-form select {

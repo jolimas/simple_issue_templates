@@ -149,6 +149,11 @@ For issues and feature requests, please use the [issue tracker](https://github.c
 
 ## Changelog
 
+### v1.0.1 (May 29, 2025)
+- Fixed template handling for multiple status changes
+- Fixed issue where changing templates didn't clear previous content
+- Improved status change template selection reliability
+
 ### v1.0.0 (May 28, 2025)
 - Initial release with all core features:
   - Auto-select templates on issue creation

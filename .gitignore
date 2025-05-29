@@ -22,3 +22,8 @@ Thumbs.db
 
 # Ignore temporary files
 /tmp/
+
+# VSCode and IDE specific files
+.vscode/
+.idea/
+.history/
