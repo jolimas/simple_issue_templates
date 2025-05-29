@@ -137,7 +137,7 @@ No additional configuration is required for basic functionality. The plugin auto
 
 ## License
 
-This plugin is licensed under the [MIT License](LICENSE).
+This plugin is licensed under the [GNU License](LICENSE).
 
 ## Author
 
