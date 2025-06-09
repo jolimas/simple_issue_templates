@@ -54,16 +54,26 @@
               <%= checked_image(template.enabled?) %>
             </td>
             <td class="reorder-buttons">
-              <%= link_to '↑', reorder_issue_template_path(template, direction: 'up'),
-                          method: :patch,
-                          remote: true,
-                          class: 'icon icon-move-up',
-                          title: l(:button_move_up) %>
-              <%= link_to '↓', reorder_issue_template_path(template, direction: 'down'),
-                          method: :patch,
-                          remote: true,
-                          class: 'icon icon-move-down',
-                          title: l(:button_move_down) %>
+              <span class="reorder-links">
+                <%= button_to '↑', reorder_issue_template_path(template, direction: 'up'),
+                            class: 'icon-only icon-arrow-up',
+                            method: :patch,
+                            form: { class: 'reorder-form' },
+                            title: l(:button_move_up),
+                            data: {
+                              direction: 'up',
+                              template_id: template.id
+                            } %>
+                <%= button_to '↓', reorder_issue_template_path(template, direction: 'down'),
+                            class: 'icon-only icon-arrow-down',
+                            method: :patch,
+                            form: { class: 'reorder-form' },
+                            title: l(:button_move_down),
+                            data: {
+                              direction: 'down',
+                              template_id: template.id
+                            } %>
+              </span>
             </td>
             <td class="buttons">
               <%= link_to l(:button_edit), edit_issue_template_path(template),
@@ -82,23 +92,50 @@
   <p class="nodata"><%= l(:label_no_data) %></p>
 <% end %>
 
-<%= content_for :header_tags do %>
+<%= content_for :header_tags do %>  <style type="text/css">
+    td.reorder-buttons {
+      white-space: nowrap;
+      text-align: center;
+    }
+    .reorder-links {
+      display: inline-block;
+    }
+    form.reorder-form {
+      display: inline-block;
+      margin: 0;
+      padding: 0;
+    }
+    form.reorder-form button {
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: #2A5685;
+      font-size: 14px;
+      padding: 2px;
+      margin: 0 3px;
+      width: 16px;
+      height: 16px;
+      line-height: 16px;
+    }
+    form.reorder-form button:hover {
+      text-decoration: underline;
+    }
+  </style>
   <script type="text/javascript">
     $(document).ready(function() {
-      // Setup CSRF token for jQuery AJAX requests
-      $.ajaxSetup({
-        beforeSend: function(xhr) {
-          xhr.setRequestHeader('X-CSRF-Token', $('meta[name="csrf-token"]').attr('content'));
+      // Prevent double submission
+      $('form.reorder-form').on('submit', function() {
+        var $form = $(this);
+        if ($form.data('submitting')) {
+          return false;
         }
-      });
 
-      // Handle reorder link clicks
-      $('.reorder-buttons a').on('ajax:error', function(event, xhr, status, error) {
-        console.error('Reorder failed:', xhr.status, xhr.responseText);
-      });
+        $form.data('submitting', true);
+        setTimeout(function() {
+          $form.data('submitting', false);
+        }, 2000);
 
-      $('.reorder-buttons a').on('ajax:success', function(event, data, status, xhr) {
-        // Success handled by reorder.js.erb
+        return true;
       });
     });
   </script>

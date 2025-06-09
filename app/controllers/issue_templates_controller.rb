@@ -44,14 +44,16 @@ class IssueTemplatesController < ApplicationController
     @template.destroy
     flash[:notice] = l(:notice_successful_delete)
     redirect_to issue_templates_path
-  end
-
-  # Reorder templates
+  end  # Reorder templates
   def reorder
     direction = params[:direction]
     template_type = @template.template_type
 
     begin
+      # Debug logging
+      Rails.logger.info "Reordering template #{@template.id} (#{@template.name}) in direction: #{direction}"
+      Rails.logger.info "Current position: #{@template.position}, Template type: #{template_type}"
+
       case direction
       when 'up'
         move_up(@template, template_type)
@@ -61,18 +63,25 @@ class IssueTemplatesController < ApplicationController
         raise ArgumentError, "Invalid direction: #{direction}"
       end
 
+      # Force reload to get the updated position
+      @template.reload
+      Rails.logger.info "New position after reordering: #{@template.position}"
+
       respond_to do |format|
         format.js # renders reorder.js.erb
         format.html { redirect_to issue_templates_path }
+        format.json { render json: { success: true, position: @template.position } }
       end
     rescue => e
       Rails.logger.error "Template reorder error: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
       respond_to do |format|
         format.js { render json: { error: e.message }, status: :unprocessable_entity }
         format.html {
           flash[:error] = "Failed to reorder template: #{e.message}"
           redirect_to issue_templates_path
         }
+        format.json { render json: { error: e.message }, status: :unprocessable_entity }
       end
     end
   end
@@ -145,31 +154,45 @@ class IssueTemplatesController < ApplicationController
   end
 
   def move_up(template, template_type)
-    templates = IssueTemplate.where(template_type: template_type).order(:position, :id)
-    current_index = templates.index(template)
+    templates = IssueTemplate.where(template_type: template_type).order(:position, :id).to_a
+    current_index = templates.index { |t| t.id == template.id }
+
+    Rails.logger.info "Moving template UP - Current index: #{current_index}, Total templates: #{templates.size}"
 
     if current_index && current_index > 0
       other_template = templates[current_index - 1]
+      Rails.logger.info "Swapping with template #{other_template.id} (#{other_template.name}) at position #{other_template.position}"
       swap_positions(template, other_template)
+    else
+      Rails.logger.info "Cannot move up - already at top or index not found"
     end
   end
 
   def move_down(template, template_type)
-    templates = IssueTemplate.where(template_type: template_type).order(:position, :id)
-    current_index = templates.index(template)
+    templates = IssueTemplate.where(template_type: template_type).order(:position, :id).to_a
+    current_index = templates.index { |t| t.id == template.id }
+
+    Rails.logger.info "Moving template DOWN - Current index: #{current_index}, Total templates: #{templates.size}"
 
     if current_index && current_index < templates.length - 1
       other_template = templates[current_index + 1]
+      Rails.logger.info "Swapping with template #{other_template.id} (#{other_template.name}) at position #{other_template.position}"
       swap_positions(template, other_template)
+    else
+      Rails.logger.info "Cannot move down - already at bottom or index not found"
     end
   end
 
   def swap_positions(template1, template2)
+    Rails.logger.info "Before swap: Template1 pos=#{template1.position}, Template2 pos=#{template2.position}"
+
     IssueTemplate.transaction do
       temp_position = template1.position
       template1.update!(position: template2.position)
       template2.update!(position: temp_position)
     end
+
+    Rails.logger.info "After swap: Template1 pos=#{template1.position}, Template2 pos=#{template2.position}"
   end
 
   # Check if user can access the template
