@@ -1,5 +1,5 @@
 class IssueTemplatesController < ApplicationController
-  before_action :require_admin
+  before_action :require_admin, except: [:get_templates]
   before_action :find_template, only: [:show, :edit, :update, :destroy, :reorder]
   protect_from_forgery with: :exception
 
@@ -82,7 +82,7 @@ class IssueTemplatesController < ApplicationController
     # If a specific template_id is requested, return just that template
     if params[:template_id].present?
       template = IssueTemplate.enabled.find_by(id: params[:template_id])
-      if template
+      if template && template_accessible?(template)
         render json: [{
           id: template.id,
           name: template.name,
@@ -170,5 +170,17 @@ class IssueTemplatesController < ApplicationController
       template1.update!(position: template2.position)
       template2.update!(position: temp_position)
     end
+  end
+
+  # Check if user can access the template
+  def template_accessible?(template)
+    # Global templates are accessible by anyone
+    return true if template.is_global || template.project_id.nil?
+
+    # Otherwise check if the user has view permission for the project
+    project = Project.find_by(id: template.project_id)
+    return false unless project
+
+    User.current.allowed_to?(:view_issues, project)
   end
 end
