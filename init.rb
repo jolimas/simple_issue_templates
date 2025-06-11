@@ -9,8 +9,8 @@ Redmine::Plugin.register :simple_issue_templates do
   # Minimum Redmine version required
   requires_redmine :version_or_higher => '4.0.0'
 
-  # Include CSS
-  Rails.application.config.assets.precompile += %w(issue_templates.css)
+  # Include CSS and JavaScript files
+  Rails.application.config.assets.precompile += %w(issue_templates.css issue_templates.js)
 
   # Permission for managing templates
   permission :manage_issue_templates, {

@@ -118,7 +118,25 @@ class IssueTemplatesController < ApplicationController
 
     if params[:tracker_id].present?
       tracker_id = params[:tracker_id].to_i
-      templates = templates.where('tracker_id IS NULL OR tracker_id = ?', tracker_id)
+
+      # Log the request for debugging
+      Rails.logger.info("Template request for tracker_id=#{tracker_id}, timestamp=#{params[:timestamp]}")
+
+      # First check if there are any templates specific to this tracker
+      tracker_specific = templates.where(tracker_id: tracker_id).to_a
+
+      # Log what we found for debugging
+      Rails.logger.info("Found #{tracker_specific.size} tracker-specific templates for tracker_id=#{tracker_id}")
+
+      # If there are tracker-specific templates, use only those
+      # Otherwise, fall back to global templates (tracker_id IS NULL)
+      if tracker_specific.any?
+        templates = templates.where(tracker_id: tracker_id)
+        Rails.logger.info("Using #{templates.count} tracker-specific templates")
+      else
+        templates = templates.where(tracker_id: nil)
+        Rails.logger.info("Using #{templates.count} global templates (no tracker-specific ones found)")
+      end
     end
 
     if params[:status_id].present? && params[:template_type] == 'status_change'

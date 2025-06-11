@@ -1,10 +1,16 @@
 module SimpleIssueTemplates
   class ViewHooks < Redmine::Hook::ViewListener
-    # Include CSS and JavaScript in the header
-    def view_layouts_base_html_head(context={})
-      stylesheet_link_tag('issue_templates', :plugin => 'simple_issue_templates') +
-      javascript_include_tag('issue_templates', :plugin => 'simple_issue_templates')
-    end
+  # Include CSS and JavaScript in the header
+  def view_layouts_base_html_head(context={})
+    stylesheet_link_tag('issue_templates', :plugin => 'simple_issue_templates') +
+    javascript_include_tag('redmine_wiki_patch', :plugin => 'simple_issue_templates') +
+    javascript_include_tag('jstoolbar_patch', :plugin => 'simple_issue_templates') +
+    javascript_include_tag('template_mutation_observer', :plugin => 'simple_issue_templates') +
+    javascript_include_tag('redmine_tracker_override', :plugin => 'simple_issue_templates') +
+    javascript_include_tag('tracker_observer', :plugin => 'simple_issue_templates') +
+    javascript_include_tag('content_enforcer', :plugin => 'simple_issue_templates') +
+    javascript_include_tag('issue_templates', :plugin => 'simple_issue_templates')
+  end
 
     # Add template selector to new issue form
     def view_issues_form_details_bottom(context={})
@@ -29,7 +35,8 @@ module SimpleIssueTemplates
               select_tag('issue_template_id',
                          options_from_collection_for_select(templates, :id, :name, first_template.id),
                          { onchange: 'applyIssueTemplate(this.value);',
-                           style: 'width: 100%; max-width: 300px;' })
+                           style: 'width: 100%; max-width: 300px;',
+                           data: { placeholder: 'Select a template...' } })
             end +
             content_tag(:script, raw("
               // Auto-apply first template on page load

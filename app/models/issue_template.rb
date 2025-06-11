@@ -21,20 +21,37 @@ class IssueTemplate < ActiveRecord::Base
   def self.available_for_project_and_tracker(project, tracker)
     templates = enabled.creation_templates.ordered
 
-    # Start with global templates
-    result = templates.global.to_a
+    # First check for tracker-specific templates
+    tracker_specific = []
+    if tracker
+      # Look for project + tracker specific templates
+      if project
+        tracker_specific = templates.where(project_id: project.id, tracker_id: tracker.id).to_a
+      end
+
+      # If no project+tracker specific templates, check for global tracker-specific templates
+      if tracker_specific.empty?
+        tracker_specific = templates.where(project_id: nil, tracker_id: tracker.id).to_a
+      end
+    end
+
+    # If we found tracker-specific templates, return those
+    if tracker_specific.any?
+      return tracker_specific
+    end
+
+    # Otherwise, fall back to project-specific and global templates
+    result = []
 
     # Add project-specific templates if we have a project
     if project
-      result += templates.for_project(project).to_a
+      result += templates.for_project(project).where(tracker_id: nil).to_a
     end
 
-    # Add tracker-specific templates if we have a tracker
-    if tracker
-      result += templates.for_tracker(tracker).to_a
-    end
+    # Add global templates (no project, no tracker)
+    result += templates.where(project_id: nil, tracker_id: nil).to_a
 
-    # Remove duplicates and return
+    # Return the result
     result.uniq
   end
 
