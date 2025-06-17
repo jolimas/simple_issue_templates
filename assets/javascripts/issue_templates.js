@@ -1,14 +1,27 @@
 function applyIssueTemplate(templateId) {
-  if (!templateId) return;
+  if (!templateId) {
+    return;
+  }
+
+  const descriptionField = document.getElementById('issue_description');
+  if (!descriptionField) {
+    console.error('Description field not found at the start of applyIssueTemplate.');
+  }
 
   // Get template content via AJAX
   fetch('/issue_templates/get_templates?template_type=creation&template_id=' + templateId)
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
     .then(data => {
       if (data.length > 0) {
         const template = data[0];
         const descriptionField = document.getElementById('issue_description');
 
+        // Enhanced debugging for description field updates
         if (descriptionField) {
           // If description is empty, replace it
           if (!descriptionField.value.trim()) {
@@ -29,6 +42,8 @@ function applyIssueTemplate(templateId) {
           if (typeof descriptionField.onchange === 'function') {
             descriptionField.onchange();
           }
+        } else {
+          console.error('Description field not found.');
         }
       }
     })
@@ -66,8 +81,6 @@ function applyStatusTemplate(templateId) {
         notesField.value = template.content;
         notesField.dispatchEvent(new Event('change', { bubbles: true }));
       }
-    } else {
-      console.log('No template data received');
     }
   })
   .catch(error => {
@@ -115,30 +128,34 @@ document.addEventListener('DOMContentLoaded', function() {
     trackerSelect.addEventListener('change', function() {
       updateTemplateOptions();
     });
-  }
 
-  // Set up status change handlers
-  const statusSelect = document.getElementById('issue_status_id');
-  const statusTemplateSelect = document.getElementById('status_template_id');
-
-  if (statusSelect) {
-    // Add event listener for status changes
-    statusSelect.addEventListener('change', function() {
-      handleStatusChange(this.value);
+    templateSelect.addEventListener('change', function() {
+      applyIssueTemplate(templateSelect.value);
     });
-
-    // Auto-select template for initial status if applicable
-    if (statusSelect.value && statusTemplateSelect) {
-      handleStatusChange(statusSelect.value);
-    }
+  } else {
+    console.error('Tracker select or template select element not found.');
   }
 
-  if (statusTemplateSelect) {
-    // Add event listener for manual template selection
-    statusTemplateSelect.addEventListener('change', function() {
-      applyStatusTemplate(this.value);
+  // Debugging: Reattach event listener for templateSelect on DOM updates
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(mutation => {
+      if (mutation.addedNodes.length > 0) {
+        const updatedTemplateSelect = document.getElementById('issue_template_id');
+        if (updatedTemplateSelect && !updatedTemplateSelect.dataset.listenerAttached) {
+          updatedTemplateSelect.addEventListener('change', function() {
+            applyIssueTemplate(updatedTemplateSelect.value);
+          });
+          updatedTemplateSelect.dataset.listenerAttached = 'true';
+        }
+      }
     });
+  });
+
+  const form = document.querySelector('form.edit_issue');
+  if (form) {
+    observer.observe(form, { childList: true, subtree: true });
   }
+
 });
 
 // Set up a MutationObserver to handle AJAX form updates
@@ -147,27 +164,23 @@ document.addEventListener('DOMContentLoaded', function() {
     for (let mutation of mutations) {
       if (mutation.addedNodes && mutation.addedNodes.length > 0) {
         // Check if relevant elements were added to the DOM
-        const statusSelect = document.getElementById('issue_status_id');
-        const statusTemplateSelect = document.getElementById('status_template_id');
+        const trackerSelect = document.getElementById('issue_tracker_id');
+        const templateSelect = document.getElementById('issue_template_id');
 
-        // Re-attach events if needed
-        if (statusSelect && !statusSelect.dataset.hasListener) {
-          statusSelect.addEventListener('change', function() {
-            handleStatusChange(this.value);
+        if (trackerSelect) {
+          trackerSelect.dataset.hasListener = 'false'; // Reset listener flag
+          trackerSelect.addEventListener('change', function() {
+            updateTemplateOptions();
           });
-          statusSelect.dataset.hasListener = 'true';
-
-          // Try to automatically apply template for current status
-          if (statusSelect.value && statusTemplateSelect) {
-            handleStatusChange(statusSelect.value);
-          }
+          trackerSelect.dataset.hasListener = 'true';
         }
 
-        if (statusTemplateSelect && !statusTemplateSelect.dataset.hasListener) {
-          statusTemplateSelect.addEventListener('change', function() {
-            applyStatusTemplate(this.value);
+        if (templateSelect) {
+          templateSelect.dataset.hasListener = 'false'; // Reset listener flag
+          templateSelect.addEventListener('change', function() {
+            applyIssueTemplate(templateSelect.value);
           });
-          statusTemplateSelect.dataset.hasListener = 'true';
+          templateSelect.dataset.hasListener = 'true';
         }
       }
     }
@@ -186,14 +199,19 @@ function updateTemplateOptions() {
   const projectId = document.querySelector('input[name="issue[project_id]"]')?.value ||
                     document.getElementById('issue_project_id')?.value;
 
-  if (!trackerSelect || !templateSelect) return;
+  if (!trackerSelect || !templateSelect) {
+    console.error('Tracker select or template select element missing during update.');
+    return;
+  }
+
+  const placeholder = templateSelect.dataset.placeholder || 'Select a template...';
+  templateSelect.innerHTML = '<option value="">' + placeholder + '</option>';
 
   const trackerId = trackerSelect.value;
 
-  // Clear current options
-  templateSelect.innerHTML = '<option value="">' + templateSelect.dataset.placeholder + '</option>';
-
-  if (!trackerId) return;
+  if (!trackerId) {
+    return;
+  }
 
   // Fetch templates for this tracker and project
   const params = new URLSearchParams({
@@ -206,14 +224,39 @@ function updateTemplateOptions() {
   }
 
   fetch('/issue_templates/get_templates?' + params.toString())
-    .then(response => response.json())
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
     .then(templates => {
+
+      // Append templates as options to the dropdown
       templates.forEach(template => {
         const option = document.createElement('option');
         option.value = template.id;
-        option.textContent = template.name;
+        option.textContent = template.name || `Template ${template.id}`;
         templateSelect.appendChild(option);
       });
+
+      // Ensure type matching for tracker comparison
+      const matchingTemplate = templates.find(template => String(template.tracker_id) === String(trackerId));
+      if (matchingTemplate) {
+        templateSelect.value = matchingTemplate.id;
+      } else if (templates.length > 0) {
+        templateSelect.value = templates[0].id;
+      }
+
+      // Ensure the selected value exists in the dropdown
+      if (Array.from(templateSelect.options).some(option => option.value === String(templateSelect.value))) {
+      } else {
+        console.error('Selected value does not exist in the dropdown options.');
+      }
+
+      // Trigger change event for templateSelect to apply the template
+      const event = new Event('change', { bubbles: true });
+      templateSelect.dispatchEvent(event);
     })
     .catch(error => {
       console.error('Error fetching templates:', error);

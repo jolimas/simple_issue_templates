@@ -96,7 +96,8 @@ class IssueTemplatesController < ApplicationController
           id: template.id,
           name: template.name,
           description: template.description,
-          content: template.content
+          content: template.content,
+          tracker_id: template.tracker_id # Include tracker_id in the response
         }]
       else
         render json: []
@@ -107,33 +108,43 @@ class IssueTemplatesController < ApplicationController
     # Otherwise, filter templates based on criteria
     templates = IssueTemplate.enabled
 
+    # Add debug logging to track filtering logic
+    Rails.logger.debug "get_templates params: #{params.inspect}"
+    Rails.logger.debug "Initial templates count: #{templates.count}"
+
     if params[:template_type].present?
       templates = templates.where(template_type: params[:template_type])
+      Rails.logger.debug "Filtered by template_type (#{params[:template_type]}): #{templates.count}"
     end
 
     if params[:project_id].present?
       project_id = params[:project_id].to_i
       templates = templates.where('project_id IS NULL OR project_id = ?', project_id)
+      Rails.logger.debug "Filtered by project_id (#{project_id}): #{templates.count}"
     end
 
     if params[:tracker_id].present?
       tracker_id = params[:tracker_id].to_i
       templates = templates.where('tracker_id IS NULL OR tracker_id = ?', tracker_id)
+      Rails.logger.debug "Filtered by tracker_id (#{tracker_id}): #{templates.count}"
     end
 
     if params[:status_id].present? && params[:template_type] == 'status_change'
       status_id = params[:status_id].to_i
       templates = templates.where('issue_status_id IS NULL OR issue_status_id = ?', status_id)
+      Rails.logger.debug "Filtered by status_id (#{status_id}): #{templates.count}"
     end
 
     templates = templates.order(:position, :name)
+    Rails.logger.debug "Final templates count: #{templates.count}"
 
     render json: templates.map { |t|
       {
         id: t.id,
         name: t.name,
         description: t.description,
-        content: t.content
+        content: t.content,
+        tracker_id: t.tracker_id # Include tracker_id in the response
       }
     }
   end
